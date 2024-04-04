@@ -5,11 +5,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.NullRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
 
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -22,14 +26,47 @@ public class SecurityConfig {
         // - you are responsible for rendering the login page, Spring Security won't generate the default
 
         // I'll use thymeleaf
+
+            /* ----------------------------------------------------------------
+             if you cache the request                                       --> default
+             * unauthenticated users go: `/auth-info-way1`
+             * spring security will redirect to: `/login`
+             * after login, spring security will redirect to: `/auth-info-way1` automatically
+
+            // parameter "continue" to redirect after login to the last requested page
+            HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
+            requestCache.setMatchingRequestParameterName("continue");         --> default
+             */
+            // ----------------------------------------------------------------*/
+
+            /*
+             if you don't cache the request
+             * no-authenticated users go: `/auth-info-way1`
+             * spring security will redirect to: `/login`
+             * after login, spring security will redirect to: `/` automatically (default)
+
+            RequestCache requestCache = new NullRequestCache();
+             */
+
         return http
-                .authorizeHttpRequests(req->req
-                        .anyRequest().authenticated())
+                .authorizeHttpRequests(req->req  // necessary when .formLogin() is used
+                        .anyRequest().permitAll())
                 .formLogin(config -> config
                         .usernameParameter("username")
                         .passwordParameter("password")
-                        .loginPage("/login") //
+                        .loginPage("/login")
+                        // use the defaults if you aren't comfortable configuring this
+
+//                        .failureForwardUrl("/login?error")    // handled in thyemleaf
+//                        .successForwardUrl("/")               // if you don't want to go to the cache URL
+//                        .defaultSuccessUrl("/", false)        // ( path, alwaysUse )
                         .permitAll())
+//                .logout(logout -> logout
+//                        .logoutUrl("/logout")
+//                        .logoutSuccessUrl("/login?logout")
+//                        .permitAll())/
+//                .requestCache(cache -> cache.requestCache(requestCache)) // is the default
+                .httpBasic(AbstractHttpConfigurer::disable)
                 .build();
         /*
         - The Form:
@@ -62,8 +99,8 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         UserDetails user = User.withDefaultPasswordEncoder() // you can do your own impl for add more attributes
-                .username("cri6h16")
-                .password("cri6h16")
+                .username("cris6h16")
+                .password("cris6h16")
                 .roles("USER")
                 .build();
         return new InMemoryUserDetailsManager(user);
