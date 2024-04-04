@@ -66,7 +66,7 @@ public class SecurityConfig {
 //                        .logoutSuccessUrl("/login?logout")
 //                        .permitAll())/
 //                .requestCache(cache -> cache.requestCache(requestCache)) // is the default
-                .httpBasic(AbstractHttpConfigurer::disable)
+                .httpBasic(httpSecurityHttpBasicConfigurer -> httpSecurityHttpBasicConfigurer.disable())
                 .build();
         /*
         - The Form:

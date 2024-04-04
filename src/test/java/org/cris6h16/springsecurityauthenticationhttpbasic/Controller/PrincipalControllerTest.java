@@ -9,7 +9,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.User;
+
+import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -58,43 +65,55 @@ class PrincipalControllerTest {
         }
 
         @Test
-        @DisplayName("whoIAm(Authentication authentication), paths & response code")
+        @DisplayName("whoIAm(Authentication authentication), paths & response body")
         void testWhoIAm_Way1() {
             ResponseEntity<?> res1 = testRestTemplate.getForEntity("/api/auth-info-way1", String.class);
             assertNotNull(res1);
-            assertEquals(401, res1.getStatusCode().value());
+            assertTrue(Objects.requireNonNull(res1.getBody()).toString().contains("<h1>Please Log In</h1>"));
         }
 
         @Test
-        @DisplayName("whoIAm(), paths & response code")
+        @DisplayName("whoIAm(), paths & response body")
         void testWhoIAm_Way2() {
             ResponseEntity<?> res2 = testRestTemplate.getForEntity("/api/auth-info-way2", String.class);
             assertNotNull(res2);
-            assertEquals(401, res2.getStatusCode().value());
+            assertTrue(Objects.requireNonNull(res2.getBody()).toString().contains("<h1>Please Log In</h1>"));
         }
     }
 
     @Nested
     class Auth {
 
-        @BeforeEach
-        void setUp() {
-            restTemplateBuilder = restTemplateBuilder.basicAuthentication("cri6h16", "cri6h16");
-            testRestTemplate = new TestRestTemplate(restTemplateBuilder);
+        private String username;
+        private String password;
+
+        public record AuthRequest(String username, String password) {} // works like a DTO I recommend separate it in another file
+
+        public Auth() {
+            this.username = "cris6h16";
+            this.password = "cris6h16";
         }
+
+        @BeforeEach
+        void setUpAuth() {
+            // TODO: implement the auth process
+        }
+
 
         @Test
         void testWhoIAm_Way1() {
+
             ResponseEntity<?> res1 = testRestTemplate.getForEntity("/api/auth-info-way1", String.class);
             assertNotNull(res1);
-            assertEquals(200, res1.getStatusCode().value());
+            assertTrue(Objects.requireNonNull(res1.getBody()).toString().contains("Hello from Who I Am, <b>" + username + "</b>"));
+
         }
 
         @Test
         void testWhoIAm_Way2() {
             ResponseEntity<?> res2 = testRestTemplate.getForEntity("/api/auth-info-way2", String.class);
             assertNotNull(res2);
-            assertEquals(200, res2.getStatusCode().value());
+            assertTrue(Objects.requireNonNull(res2.getBody()).toString().contains("Hello from Who I Am, <b>" + username + "</b>"));
         }
 
 
